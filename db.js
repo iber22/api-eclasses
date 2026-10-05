@@ -11,8 +11,16 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 }
 
 // A API é stateless: não precisamos de sessão de usuário do Supabase Auth.
+// Node 22+ já tem WebSocket nativo. No Node 20 ou menor, o cliente do Supabase
+// exige uma implementação para iniciar (mesmo sem usarmos tempo real), então
+// usamos o pacote "ws". Recomendado: atualizar para o Node 22.
+const opcoesRealtime = typeof WebSocket === 'undefined'
+    ? { realtime: { transport: require('ws') } }
+    : {};
+
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
+    ...opcoesRealtime,
 });
 
 module.exports = supabase;
